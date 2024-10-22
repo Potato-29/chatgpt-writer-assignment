@@ -23,7 +23,32 @@ export default defineContentScript({
     // this listener adds the edit icon to the input
     document.addEventListener("click", (event: MouseEvent) => {
       const target = event.target as HTMLElement;
+      const isFocused =
+        target.attributes.getNamedItem("data-artdeco-is-focused") === null
+          ? false
+          : true;
+      const editBtn: HTMLElement | null = document.getElementById("editIcon");
+      if (editBtn !== null) {
+        if (!isFocused) {
+          editBtn.style.display = "none";
+        } else {
+          editBtn.style.display = "block";
+        }
+      }
 
+      const icon = document.createElement("img");
+      icon.className = "editIcon";
+      icon.id = "editIcon";
+      icon.src = editIcon;
+      icon.alt = "Custom Icon";
+      icon.style.position = "absolute";
+      icon.style.bottom = "5px";
+      icon.style.right = "5px";
+      icon.style.width = "45px";
+      icon.style.height = "45px";
+      icon.style.cursor = "pointer";
+      icon.style.zIndex = "1000";
+      icon.style.display = "block";
       // Check if clicked element is a message input area
       if (
         target.matches(".msg-form__contenteditable") ||
@@ -47,17 +72,6 @@ export default defineContentScript({
         if (parentContainer && !parentContainer.querySelector(".editIcon")) {
           parentContainer.style.position = "relative";
 
-          const icon = document.createElement("img");
-          icon.className = "editIcon";
-          icon.src = editIcon;
-          icon.alt = "Custom Icon";
-          icon.style.position = "absolute";
-          icon.style.bottom = "5px";
-          icon.style.right = "5px";
-          icon.style.width = "45px";
-          icon.style.height = "45px";
-          icon.style.cursor = "pointer";
-          icon.style.zIndex = "1000";
           parentContainer.appendChild(icon);
 
           // Open the modal when the edit icon is clicked
@@ -164,7 +178,6 @@ export default defineContentScript({
     // close the modal when user clicks outside
     document.addEventListener("click", (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      console.log(target);
       if (target.id === "generate-modal" && modal?.style.display === "flex") {
         modal.style.display = "none";
       }
