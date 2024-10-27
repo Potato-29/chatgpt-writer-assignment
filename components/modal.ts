@@ -5,7 +5,7 @@ export const modalHtml: string = `<div id="generate-modal" style="position: fixe
 <div id="modal-content" style="background: white; border-radius: 8px; width: 100%; max-width: 570px; padding: 10px;">
   <div id="responses" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column;"></div>
   <div style="margin-bottom: 10px;">
-    <input id="input-text" type="text" placeholder="Enter your prompt..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
+    <input id="gptwriter-modal-input-text" type="text" placeholder="Enter your prompt..." style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"/>
   </div>
   <div style="text-align: right; margin-top: 12px;">
     <button id="confirm-btn" style="background: #fff; color: #666D80; padding: 8px 16px; border: 2px solid #666D80; border-radius: 4px; cursor: pointer; display: none; margin-right: 10px;">

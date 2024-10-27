@@ -9,6 +9,20 @@ export default defineContentScript({
     let lastGeneratedMessage = "";
     let parentContainer: HTMLElement | null = null;
 
+    const icon = document.createElement("img");
+    icon.className = "editIcon";
+    icon.id = "editIcon";
+    icon.src = editIcon;
+    icon.alt = "Custom Icon";
+    icon.style.position = "absolute";
+    icon.style.bottom = "5px";
+    icon.style.right = "5px";
+    icon.style.width = "45px";
+    icon.style.height = "45px";
+    icon.style.cursor = "pointer";
+    icon.style.zIndex = "1000";
+    icon.style.display = "block";
+
     document.body.insertAdjacentHTML("beforeend", modalHtml);
     let modal: HTMLElement | null = document.getElementById("generate-modal");
     const generateBtn = document.getElementById(
@@ -17,70 +31,44 @@ export default defineContentScript({
     const insertBtn = document.getElementById(
       "confirm-btn"
     ) as HTMLButtonElement;
-    const inputText = document.getElementById("input-text") as HTMLInputElement;
+    const inputText = document.getElementById("gptwriter-modal-input-text") as HTMLInputElement;
     const responseDiv = document.getElementById("responses") as HTMLDivElement;
 
-    // this listener adds the edit icon to the input
-    document.addEventListener("click", (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const isFocused =
-        target.attributes.getNamedItem("data-artdeco-is-focused") === null
-          ? false
-          : true;
-      const editBtn: HTMLElement | null = document.getElementById("editIcon");
-      if (editBtn !== null) {
-        if (!isFocused) {
-          editBtn.style.display = "none";
-        } else {
-          editBtn.style.display = "block";
-        }
-      }
 
-      const icon = document.createElement("img");
-      icon.className = "editIcon";
-      icon.id = "editIcon";
-      icon.src = editIcon;
-      icon.alt = "Custom Icon";
-      icon.style.position = "absolute";
-      icon.style.bottom = "5px";
-      icon.style.right = "5px";
-      icon.style.width = "45px";
-      icon.style.height = "45px";
-      icon.style.cursor = "pointer";
-      icon.style.zIndex = "1000";
-      icon.style.display = "block";
-      // Check if clicked element is a message input area
-      if (
-        target.matches(".msg-form__contenteditable") ||
-        target.closest(".msg-form__contenteditable")
-      ) {
-        parentContainer =
-          target.closest(".msg-form__container") ||
-          target.closest(".msg-form__contenteditable");
-
-        const contentContainer = parentContainer?.closest(
-          ".msg-form_msg-content-container"
-        );
-
-        if (parentContainer && contentContainer) {
-          contentContainer.classList.add(
-            "msg-form_msg-content-container--is-active"
-          );
-          parentContainer.setAttribute("data-artdeco-is-focused", "true");
-        }
-
-        if (parentContainer && !parentContainer.querySelector(".editIcon")) {
-          parentContainer.style.position = "relative";
-
-          parentContainer.appendChild(icon);
-
-          // Open the modal when the edit icon is clicked
+    var mutationObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.type === "attributes" && mutation.attributeName === "data-artdeco-is-focused") {
+          const target = mutation.target as HTMLElement;
+          console.log(target)
+          if (target.matches(".msg-form__contenteditable"))
+            if (mutation.oldValue === null) {
+              icon.style.display = "block";
+              parentContainer =
+                target.closest(".msg-form__container") ||
+                target.closest(".msg-form__contenteditable");
+              if (parentContainer && !parentContainer.querySelector("#editIcon")) {
+                parentContainer.appendChild(icon);
+              }
+            }
+          if (mutation.oldValue === "true") {
+            icon.style.display = "none";
+          }
           icon.addEventListener("click", (e) => {
             e.stopPropagation();
             modal.style.display = "flex";
+            inputText.focus()
+
           });
         }
-      }
+      });
+    });
+    mutationObserver.observe(document.documentElement, {
+      attributes: true,
+      characterData: true,
+      childList: false,
+      subtree: true,
+      attributeOldValue: true,
+      characterDataOldValue: true
     });
 
     // this listener generate a dummy response
@@ -138,6 +126,7 @@ export default defineContentScript({
         generateBtn.style.backgroundColor = "#007bff";
         generateBtn.style.color = "white";
         generateBtn.innerHTML = `<img src="${regenerateIcon}" alt="Regenerate" style="vertical-align: middle; margin-right: 5px; width: 16px; height: 16px"> <b>Regenerate</b>`;
+        generateBtn.disabled = true
 
         // Reset input field
         inputText.value = "";
